@@ -10,16 +10,42 @@
 <body class="bg-light">
 
   <div class="container py-5">
-    <h2 class="text-center mb-4">📊 Data Terbaru dari Google Sheets</h2>
+    <h2 class="text-center mb-4">📊 Data dari Google Sheets</h2>
     
-    <div class="row justify-content-center">
+    <!-- data terbaru -->
+    <div class="row justify-content-center mb-4">
       <div class="col-md-6">
         <div class="card shadow-lg">
           <div class="card-body">
-            <h5 class="card-title">Informasi Terbaru</h5>
+            <h5 class="card-title">Data Terbaru</h5>
             <p class="card-text mb-1"><strong>Nama:</strong> <span id="nama">Loading...</span></p>
             <p class="card-text mb-1"><strong>Kelas:</strong> <span id="kelas">Loading...</span></p>
             <p class="card-text"><strong>Waktu:</strong> <span id="waktu">Loading...</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- tabel recent -->
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <div class="card shadow">
+          <div class="card-body">
+            <h5 class="card-title">📜 Daftar Data Recent</h5>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Nama</th>
+                    <th>Kelas</th>
+                    <th>Waktu</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-data">
+                  <tr><td colspan="3" class="text-center">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           <div class="card-footer text-muted text-center">
             Update otomatis dari Google Sheets
@@ -31,22 +57,36 @@
 
   <script>
     async function getData() {
-      const url = "https://script.google.com/macros/s/AKfycbyhQBmZPdNxQToQvw9-SPHGYt5Jn_8QtJNwdnUh1DFAj4Ey5KNNK5QqtaOICkbhyhxDZA/exec"; // ganti dengan URL Web App kamu
+      const url = "https://script.google.com/macros/s/AKfycbxf23KaoqsJkPPMX-6t9CMdqf3IOJDosex6RauS_BE9pwK1tGw6t27n39yBhlTcKkS6ig/exec"; // ganti dengan URL Web App kamu
       try {
         const res = await fetch(url + "?t=" + new Date().getTime());
-        const data = await res.json();
+        const json = await res.json();
 
-        document.getElementById("nama").innerText = data.Nama || "-";
-        document.getElementById("kelas").innerText = data.Kelas || "-";
-        document.getElementById("waktu").innerText = data.Waktu || "-";
+        // tampilkan data terbaru
+        document.getElementById("nama").innerText = json.latest.Nama || "-";
+        document.getElementById("kelas").innerText = json.latest.Kelas || "-";
+        document.getElementById("waktu").innerText = json.latest.Waktu || "-";
+
+        // tampilkan recent data
+        let tbody = "";
+        json.all.slice().reverse().forEach(row => {
+          tbody += `
+            <tr>
+              <td>${row.Nama}</td>
+              <td>${row.Kelas}</td>
+              <td>${row.Waktu}</td>
+            </tr>`;
+        });
+        document.getElementById("recent-data").innerHTML = tbody;
+
       } catch (err) {
         console.error("Gagal ambil data:", err);
       }
     }
 
-    // load pertama kali
+    // load pertama
     getData();
-    // refresh tiap 5 detik
+    // auto refresh tiap 5 detik
     setInterval(getData, 5000);
   </script>
 </body>
